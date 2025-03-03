@@ -1,0 +1,1 @@
+AISD_OPTS='-m udp-server -h {{rtl_ais_host}} -p {{rtl_ais_port}} {% for receiver in aisdispatcher_receivers %}-d {{ receiver.host }}:{{ receiver.port }} {% endfor %} -s {{aisdispatcher_name}} -w 10 -S/tmp/aiscontrol_data.sock'

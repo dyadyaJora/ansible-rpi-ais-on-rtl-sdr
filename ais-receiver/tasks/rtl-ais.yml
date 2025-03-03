@@ -1,0 +1,93 @@
+---
+# Install required dependencies for ais-receiver
+- name: Install required armhf packages for AIS RTL-SDR
+  ansible.builtin.apt:
+    name:
+      - gcc-12-base:armhf
+      - libc6:armhf
+      - libgcc-s1:armhf
+      - libidn2-0:armhf
+      - libpthread-stubs0-dev:armhf
+      - librtlsdr-dev:armhf
+      - librtlsdr0:armhf
+      - libudev1:armhf
+      - libunistring2:armhf
+      - libusb-1.0-0:armhf
+      - libusb-1.0-0-dev:armhf
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+# Download rtl-ais deb package
+- name: Download rtl-ais deb package
+  ansible.builtin.get_url:
+    url: "https://launchpad.net/~sailoog/+archive/ubuntu/openplotter/+files/rtl-ais_{{ rtl_ais_version }}_armhf.deb"
+    dest: "/tmp/rtl-ais_{{ rtl_ais_version }}_armhf.deb"
+    mode: '0644'
+  become: true
+  tags:
+    - download
+    - rtl-ais
+
+# Install rtl-ais deb package
+- name: Install rtl-ais deb package
+  ansible.builtin.apt:
+    deb: "/tmp/rtl-ais_{{ rtl_ais_version }}_armhf.deb"
+    state: present
+  become: true
+  tags:
+    - install
+    - rtl-ais
+
+# Verify rtl_ais installation
+- name: Verify rtl_ais installation
+  ansible.builtin.command: which rtl_ais
+  register: rtl_ais_help
+  changed_when: false
+  failed_when: rtl_ais_help.rc != 0
+  become: true
+  tags:
+    - verify
+    - rtl-ais
+
+- name: Display rtl_ais installed location
+  ansible.builtin.debug:
+    msg: "{{ rtl_ais_help.stdout_lines }}"
+  when: rtl_ais_help.rc == 0
+  tags:
+    - verify
+    - rtl-ais
+
+# Setup ais-feed service
+- name: Create ais-feed systemd service file
+  ansible.builtin.template:
+    src: ais-feed.service.j2
+    dest: /etc/systemd/system/ais-feed.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: Restart ais-feed service
+  tags:
+    - service
+    - rtl-ais
+
+- name: Enable rtl-ais service
+  ansible.builtin.systemd:
+    name: ais-feed
+    enabled: yes
+    daemon_reload: yes
+  become: true
+  tags:
+    - service
+    - rtl-ais
+
+- name: Start rtl-ais service
+  ansible.builtin.systemd:
+    name: ais-feed
+    state: started
+  become: true
+  tags:
+    - service
+    - rtl-ais

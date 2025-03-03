@@ -1,0 +1,20 @@
+---
+# defaults file for ais-receiver
+rtl_ais_version: "0.4.3-stable"
+rtl_ais_device_index: 0
+rtl_ais_extra_opts: ""
+rtl_ais_host: "127.0.0.1"
+rtl_ais_port: 10110
+rtl_ais_user: "root"
+rtl_ais_group: "root"
+
+# AIS Dispatcher configuration
+aiscontrol_port: 8080
+aiscontrol_ws_port: 8081
+aisdispatcher_name: "rPiAIS001"
+
+# AIS Dispatcher receivers list
+aisdispatcher_receivers:
+  - name: "First"
+    host: "127.0.0.1"
+    port: "12345"

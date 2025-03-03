@@ -1,0 +1,35 @@
+{
+    "rPiAIS001": {
+        "destinations": [
+        {% for receiver in aisdispatcher_receivers %}
+        {
+            "desc": "{{ receiver.name | default('Receiver ' + loop.index|string) }}",
+            "host": "{{ receiver.host }}",
+            "port": "{{ receiver.port }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+        ],
+        "device": "/dev/ttyS0",
+        "downsamplingTime": "10",
+        "duplicatesTimeWindow": true,
+        "enabled": true,
+        "host": [
+            "",
+            "{{rtl_ais_host}}"
+        ],
+        "inactivityTimeout": "300",
+        "location": [
+            "",
+            ""
+        ],
+        "mode": "udp-server",
+        "noneVDM": false,
+        "port": [
+            "",
+            "{{rtl_ais_port}}"
+        ],
+        "reconnectTimeout": "60",
+        "tag": false,
+        "verbosity": "0"
+    }
+}

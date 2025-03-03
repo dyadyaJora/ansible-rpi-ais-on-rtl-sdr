@@ -1,0 +1,7 @@
+---
+# handlers file for ais-receiver
+- name: Restart ais-feed service
+  ansible.builtin.systemd:
+    name: ais-feed
+    state: restarted
+  become: true

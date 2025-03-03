@@ -1,0 +1,16 @@
+[Unit]
+Description=RTL-AIS feed service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rtl_ais -d {{ rtl_ais_device_index }} -h {{ rtl_ais_host }} -p {{ rtl_ais_port }} {{ rtl_ais_extra_opts }}
+Restart=always
+RestartSec=5
+User={{ rtl_ais_user | default('root') }}
+Group={{ rtl_ais_group | default('root') }}
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

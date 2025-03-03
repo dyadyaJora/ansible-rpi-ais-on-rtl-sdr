@@ -1,0 +1,132 @@
+---
+# AIS Hub Dispatcher Installation Tasks
+- name: Download AIS Hub dispatcher installer
+  ansible.builtin.get_url:
+    url: https://www.aishub.net/downloads/dispatcher/install_dispatcher
+    dest: /tmp/install_dispatcher
+    mode: '0755'
+  become: true
+  tags:
+    - aiscontrol
+    - download
+
+- name: Check if directory exists
+  ansible.builtin.stat:
+    path: /home/ais/.config
+  register: folder_check
+  tags:
+    - aiscontrol
+
+- name: Run AIS Hub dispatcher installer
+  ansible.builtin.command:
+    cmd: /tmp/install_dispatcher
+    chdir: /tmp
+  become: true
+  when: not folder_check.stat.exists
+  register: install_result
+  changed_when: install_result.rc == 0
+  failed_when: install_result.rc != 0
+  tags:
+    - aiscontrol
+    - install
+
+- name: Create aiscontrol config
+  ansible.builtin.template:
+    src: aiscontrol.cfg.j2
+    dest: /home/ais/etc/aiscontrol.cfg
+    owner: ais
+    group: ais
+    mode: '0644'
+  become: true
+  tags:
+    - aiscontrol
+    - config
+
+- name: Create aisdispatcher options config
+  ansible.builtin.template:
+    src: aisdispatcher.opts.j2
+    dest: /home/ais/etc/aisdispatcher/aisdispatcher_{{aisdispatcher_name}}.opts
+    owner: ais
+    group: ais
+    mode: '0640'
+  become: true
+  tags:
+    - aiscontrol
+    - config
+
+- name: Create aisdispatcher json config
+  ansible.builtin.template:
+    src: aisdispatcher.json.j2
+    dest: /home/ais/etc/aisdispatcher.json
+    owner: ais
+    group: ais
+    mode: '0644'
+  become: true
+  tags:
+    - aiscontrol
+    - config
+
+- name: Enable linger for ais user (ensures systemd user session persists)
+  ansible.builtin.command:
+    cmd: loginctl enable-linger ais
+  become: true
+  tags:
+    - aiscontrol
+
+- name: Get ais user ID
+  ansible.builtin.command: id -u ais
+  register: ais_uid
+  changed_when: false
+  become: true
+  tags:
+    - aiscontrol
+
+- name: Enable user service aiscontrol
+  ansible.builtin.systemd:
+    name: aiscontrol
+    enabled: yes
+    daemon_reload: yes
+    scope: user
+  become: true
+  become_user: ais
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ais_uid.stdout }}"
+  tags:
+    - aiscontrol
+
+- name: Start user service aiscontrol
+  ansible.builtin.systemd:
+    name: aiscontrol
+    state: started
+    scope: user
+  become: true
+  become_user: ais
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ais_uid.stdout }}"
+  tags:
+    - aiscontrol
+
+- name: Enable user service aisdispatcher
+  ansible.builtin.systemd:
+    name: aisdispatcher@{{aisdispatcher_name}}
+    enabled: yes
+    daemon_reload: yes
+    scope: user
+  become: true
+  become_user: ais
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ais_uid.stdout }}"
+  tags:
+    - aiscontrol
+
+- name: Start user service aiscontrol
+  ansible.builtin.systemd:
+    name: aisdispatcher@{{aisdispatcher_name}}
+    state: started
+    scope: user
+  become: true
+  become_user: ais
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ais_uid.stdout }}"
+  tags:
+    - aiscontrol

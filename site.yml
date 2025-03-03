@@ -1,0 +1,6 @@
+---
+- name: AIS Receiver
+  hosts: rpi
+  become: true
+  roles:
+    - ais-receiver

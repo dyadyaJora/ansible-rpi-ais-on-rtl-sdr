@@ -1,0 +1,4 @@
+---
+- import_tasks: rtl-sdr.yml
+- import_tasks: rtl-ais.yml
+- import_tasks: aiscontrol.yml

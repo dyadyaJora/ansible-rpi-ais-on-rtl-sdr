@@ -1,0 +1,8 @@
+---
+- name: Install RTL-SDR package
+  ansible.builtin.apt:
+    name: rtl-sdr
+    state: present
+  tags:
+    - rtl-sdr
+    - install
